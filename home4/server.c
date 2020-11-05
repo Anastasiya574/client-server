@@ -68,16 +68,16 @@ int main(int argc, char** argv) {
     puts("Wait for connection");
     struct sockaddr_in client_address;
     socklen_t size;
-    int *client_socket = malloc(client_numb * sizeof(int));
-    for (int i = 0; i < client_numb; i++) {
+    int *client_socket = malloc(number_of_clients * sizeof(int));
+    for (int i = 0; i < number_of_clients; i++) {
         client_socket[i] = accept(server_socket,
                                 (struct sockaddr *) &client_address,
                                 &size);
         printf("connected: %s %d\n", inet_ntoa(client_address.sin_addr),
                                 ntohs(client_address.sin_port));
     }
-    pid_t *pid = malloc(client_numb * sizeof(pid_t));
-    for (int i = 0; i < client_numb; i++) {
+    pid_t *pid = malloc(number_of_clients * sizeof(pid_t));
+    for (int i = 0; i < number_of_clients; i++) {
         pid[i] = fork();
         if (pid[i] == 0) {
             char *word = NULL;
@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
                 }
                 printf("%d: ", i + 1);
                 puts(word);
-                for (int k = 0; k < client_numb; k++) {
+                for (int k = 0; k < number_of_clients; k++) {
                     if (k != i) {
                         write(client_socket[k], &i, 1);
                         write(client_socket[k], word, j);
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
             _exit(1);
         }
     }
-    for (int i = 0; i < client_numb; i++) {
+    for (int i = 0; i < number_of_clients; i++) {
         waitpid(pid[i], 0, 0);
         close(client_socket[i]);
     }
