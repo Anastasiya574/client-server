@@ -57,12 +57,14 @@ int main(int argc, char **argv) {
     int port = atoi(argv[2]);
     int server = init_socket(ip, port);
     char ch;
-    for (ch = getchar(); ch != '\n'; ch = getchar()) {
+    ch = getchar();
+    while (ch != '\n') {
         if (ch != '\n') {
             write(server, &ch, 1);
             printf("Client: ");
             putchar(ch);
             puts("");
+            ch = getchar();
         }
     }
     write(server, &ch, 1);

@@ -80,8 +80,9 @@ int main(int argc, char** argv) {
     do {
         for (int i = 0; i < number_of_clients; i++) {
             read(client_socket[i], &ch, 1);
-            if (ch == ' ' || ch == '\n')
+            if (ch == ' ' || ch == '\n') {
                 break;
+            }
             printf("%d: ", i + 1);
             putchar(ch);
             puts("");
