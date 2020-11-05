@@ -57,12 +57,12 @@ int init_socket(int port) {
 int main(int argc, char** argv) {
     if (argc != 3) {
         puts("Incorrect args.");
-        puts("./server <port> <client_numb>");
+        puts("./server <port> <number_of_clients>");
         puts("Example:");
         puts("./server 5000 2");
         return ERR_INCORRECT_ARGS;
     }
-    int client_numb = atoi(argv[2]);
+    int number_of_clients = atoi(argv[2]);
     int port = atoi(argv[1]);
     int server_socket = init_socket(port);
     puts("Wait for connection");
