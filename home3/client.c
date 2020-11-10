@@ -17,18 +17,18 @@ enum errors {
 };
 
 char *get_word(int *size) {
-    char *answ = NULL;
-    char c = getchar();
-    int cnt = 0;
-    while (c != '\n' && c != ' ') {
-        cnt++;
-        answ = realloc(answ, (cnt + 1) * sizeof(char));
-        answ[cnt - 1] = c;
-        c = getchar();
+    char *word = NULL;
+    char ch = getchar();
+    int i = 0;
+    while (ch != '\n' && ch != ' ') {
+        i++;
+        word = realloc(word, (i + 1) * sizeof(char));
+        word[i - 1] = ch;
+        ch = getchar();
     }
-    answ[cnt] = '\0';
-    *size = cnt + 1;
-    return answ;
+    word[i] = '\0';
+    *size = i + 1;
+    return word;
 }
 
 int init_socket(const char *ip, int port) {
@@ -72,11 +72,10 @@ int main(int argc, char **argv) {
     int port = atoi(argv[2]);
     int server = init_socket(ip, port);
     char *word;
-    int size_w;
-    for (word = get_word(&size_w);
-        strcmp(word, "exit") && strcmp(word, "quit");
-        word = get_word(&size_w)) {
-            write(server, word, size_w);
+    int size_of_word;
+    while (1) {
+            word = get_word(&size_of_word);
+            write(server, word, size_of_word);
             printf("Send word: ");
             puts(word);
             free(word);
