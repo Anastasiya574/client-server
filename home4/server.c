@@ -54,6 +54,10 @@ int init_socket(int port) {
     return server_socket;
 }
 
+int is_final(char ch) {
+	return ch == ' ' || ch == '\n';
+}
+
 int main(int argc, char** argv) {
     if (argc != 3) {
         puts("Incorrect args.");
