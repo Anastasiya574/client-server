@@ -16,6 +16,21 @@ enum errors {
     ERR_CONNECT
 };
 
+char *get_word(int *size) {
+    char *word = NULL;
+    char ch = getchar();
+    int i = 0;
+    while (ch != '\n' && ch != ' ') {
+        i++;
+        word = realloc(word, (i + 1) * sizeof(char));
+        word[i - 1] = ch;
+        ch = getchar();
+    }
+    word[i] = '\0';
+    *size = i + 1;
+    return word;
+}
+
 int init_socket(const char *ip, int port) {
     // open socket, result is socket descriptor
     int server_socket = socket(PF_INET, SOCK_STREAM, 0);
@@ -58,8 +73,8 @@ int main(int argc, char **argv) {
     int server = init_socket(ip, port);
     char ch;
     ch = getchar();
-    while (ch != '\n') {
-        if (ch != '\n') {
+    while (1) {
+        if (ch != ' ' && ch != '\n') {
             write(server, &ch, 1);
             printf("Client: ");
             putchar(ch);
@@ -67,7 +82,7 @@ int main(int argc, char **argv) {
             ch = getchar();
         }
     }
-    write(server, &ch, 1);
+    //write(server, &ch, 1);
     close(server);
     return OK;
 }

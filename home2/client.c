@@ -71,16 +71,14 @@ int main(int argc, char **argv) {
     int port = atoi(argv[2]);
     int server = init_socket(ip, port);
     char *word;
-    int size_w;
-    for (word = get_word(&size_w);
-        strcmp(word, "exit") && strcmp(word, "quit");
-        word = get_word(&size_w)) {
-            write(server, word, size_w);
+    int size_of_word;
+    while (1) {
+            word = get_word(&size_of_word);
+            write(server, word, size_of_word);
             printf("Send word: ");
             puts(word);
+            free(word);
     }
-    char ch = '.';
-    write(server, &ch, 1);
     close(server);
     return OK;
 }

@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/wait.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <sys/wait.h>
 
 enum errors {
     OK,
@@ -76,18 +77,17 @@ int main(int argc, char** argv) {
         printf("connected: %s %d\n", inet_ntoa(client_address.sin_addr),
                                 ntohs(client_address.sin_port));
     }
+    int i = 0;
     char ch;
+    int ret_size = 1;
     do {
         for (int i = 0; i < number_of_clients; i++) {
-            read(client_socket[i], &ch, 1);
-            if (ch == ' ' || ch == '\n') {
-                break;
-            }
+            ret_size = read(client_socket[i], &ch, 1);
             printf("%d: ", i + 1);
             putchar(ch);
             puts("");
         }
-    } while (ch != '\n');
+    } while (ret_size > 0);
     for (int i = 0; i < number_of_clients; i++) {
         close(client_socket[i]);
     }

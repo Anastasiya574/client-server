@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <string.h>
+#include <sys/wait.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -66,7 +67,6 @@ int main(int argc, char** argv) {
     int number_of_clients = atoi(argv[2]);
     int server_socket = init_socket(port);
     puts("Wait for connection");
-    puts("Wait for connection");
     struct sockaddr_in client_address;
     socklen_t size;
     int *client_socket = malloc(number_of_clients * sizeof(int));
@@ -82,13 +82,14 @@ int main(int argc, char** argv) {
     for (int i = 0; i < number_of_clients; i++) {
         pid[i] = fork();
         if (pid[i] == 0) {
-            while (ch != '\n') {
-                read(client_socket[i], &ch, 1);
+        int ret_size = read(client_socket[i], &ch, 1);
+            while (ret_size > 0) {
                 printf("%d: ", i + 1);
                 putchar(ch);
                 puts("");
+                ret_size = read(client_socket[i], &ch, 1);
             }
-            _exit(1);
+            _exit(0);
         }
     }
     for (int i = 0; i < number_of_clients; i++) {

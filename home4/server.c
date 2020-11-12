@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <sys/wait.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
                         write(client_socket[k], word, j);
                     }
                 }
-            } while (1);
+            } while (strcmp(word, "exit") && strcmp(word, "quit"));
             _exit(1);
         }
     }
