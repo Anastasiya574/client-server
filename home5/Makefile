@@ -1,14 +1,14 @@
-all: bin bin/server bin/client
+all: bin bin/web-server bin/web-client
 	
 bin:
 	mkdir bin
 
-bin/server: server.c
-	gcc server.c -o bin/server
+bin/web-server: web-server.c
+	gcc web-server.c -o bin/web-server
 
-bin/client: client.c
-	gcc client.c -o bin/client
+bin/web-client: web-client.c
+	gcc web-client.c -o bin/web-client
 
 clean:
-	rm bin/server bin/client
+	rm bin/web-server bin/web-client
 	rmdir bin
