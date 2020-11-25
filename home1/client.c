@@ -79,8 +79,8 @@ int main(int argc, char **argv) {
             printf("Client: ");
             putchar(ch);
             puts("");
-            ch = getchar();
         }
+        ch = getchar();
     }
     //write(server, &ch, 1);
     close(server);
