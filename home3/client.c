@@ -20,13 +20,12 @@ char *get_word(int *size) {
     char *word = NULL;
     char ch = getchar();
     int i = 0;
-    //while (ch != '\n' && ch != ' ') {
-    while(1) {
+    do {
         i++;
-        word = realloc(word, (i + 1) * sizeof(char));
+        word = realloc(word, (i + 1)* sizeof(char));
         word[i - 1] = ch;
         ch = getchar();
-    }
+    } while (ch != '\n' && ch != ' ');
     word[i] = '\0';
     *size = i + 1;
     return word;
@@ -75,7 +74,7 @@ int main(int argc, char **argv) {
     char *word;
     int size_of_word;
     word = get_word(&size_of_word);
-    while (strcmp(word, "exit")) {
+    while ((strcmp(word, "exit"))) {
             write(server, word, size_of_word);
             printf("Send word: ");
             puts(word);

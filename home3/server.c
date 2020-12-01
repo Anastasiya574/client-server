@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
                 printf("%d: ", i + 1);
                 puts(word);
                 //free(word);
-            } while (strcmp(word, "exit") && strcmp(word, "quit"));
+            } while ((strcmp(word, "exit")));
             _exit(1);
         }
     }
