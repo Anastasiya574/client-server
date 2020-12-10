@@ -29,8 +29,8 @@ int init_socket(int port) {
 
     // set socket option
     int socket_option = 1;
-    setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR,
-        &socket_option, sizeof(socket_option));
+    setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &socket_option,
+              (socklen_t) sizeof(socket_option));
     if (server_socket < 0) {
         perror("Fail: set socket options");
         _exit(ERR_SETSOCKETOPT);
@@ -42,7 +42,7 @@ int init_socket(int port) {
     server_address.sin_port = htons(port);
     server_address.sin_addr.s_addr = INADDR_ANY;
     if (bind(server_socket, (struct sockaddr *) &server_address,
-        sizeof(server_address)) < 0) {
+       (socklen_t) sizeof(server_address)) < 0) {
         perror("Fail: bind socket address");
         _exit(ERR_BIND);
     }
@@ -55,7 +55,7 @@ int init_socket(int port) {
     return server_socket;
 }
 
-char *get_from_client(int client_socket) {
+char *get_word(int client_socket) {
     char *word = NULL;
     char ch;
     int size = 0;
@@ -64,29 +64,41 @@ char *get_from_client(int client_socket) {
         word = realloc(word, sizeof(char) * (size + 1));
         word[size - 1] = ch;
     }
-    word[size] = '\0';
+    if (word)
+        word[size] = '\0';
+    else
+        return get_word(client_socket);
     return word;
 }
 
-int telnet(char *word) {
+int telnet(char *word, int client_socket) {
     int fd = open(word, O_RDONLY, 0);
     if (fd > -1) {
-        printf("HTTP/1.1 200\n");
+        char cont1[] = "HTTP/1.1 200\ncontent-type: ";
+        write(client_socket, cont1, strlen(cont1));
         int content_type;
         int type_ind = 0;
         for (; word[type_ind] != '.'; type_ind++);
-        printf("content-type: %s/text\n", &(word[type_ind + 1]));
+        write(client_socket, &(word[type_ind]), strlen(&(word[type_ind])));
+        printf("%s/text\n", &(word[type_ind + 1]));
         
         struct stat stats;
         if (stat(word, &stats) != 0)
             perror("stat error");
-        printf("content-size: %ld\n", stats.st_size);
+        char cont2[] = "/text\ncontent-size: ";
+        write(client_socket, cont2, strlen(cont2));
+        char str_size[15];
+        sprintf(str_size, "%ld", stats.st_size);
+        write(client_socket, str_size, strlen(str_size));
+        write(client_socket, "\n", 2);
         char *buff = malloc(sizeof(char) * stats.st_size);
         read(fd, buff, stats.st_size);
-        printf("%s", buff);
-        write(1, buff, stats.st_size);
+        write(client_socket, buff, stats.st_size);
+        free(buff);
+        write(client_socket, "\n", 1);
     } else {
-        printf("HTTP/1.1 404\n");
+        char msg[] = "HTTP/1.1 404\n";
+        write(client_socket, msg, strlen(msg));
     }
     close(fd);
     puts("\n");
@@ -112,43 +124,41 @@ int main(int argc, char** argv) {
     printf("connected: %s %d\n", inet_ntoa(client_address.sin_addr),
                             ntohs(client_address.sin_port));
     char *word = NULL;
-    char *message = NULL;
+    char *cont = NULL;
     while(1) {
         free(word);
         char ch;
-        int size_of_word;
+        int size;
 
-        message = get_from_client(client_socket);
-        if (!strcmp(message, "quit"))
+        cont = get_word(client_socket);
+        if (!strcmp(cont, "quit"))
             break;
-        if (strcmp(message, "GET"))
-            perror("GET");
+        if (strcmp(cont, "GET"))
+            perror("Incorrect query 1");
 
-        free(message);
+        free(cont);
 
-        word = get_from_client(client_socket);
+        word = get_word(client_socket);
 
-        message = get_from_client(client_socket);
-        if (strcmp(message, "HTTP/1.1"))
-            perror("HTTP/1.1");
-        free(message);
+        cont = get_word(client_socket);
+        if (strcmp(cont, "HTTP/1.1"))
+            perror("Incorrect query 2");
+        free(cont);
 
-        message = get_from_client(client_socket);
-        if (strcmp(message, "Host:"))
-            perror("Host");
-        free(message);
+        cont = get_word(client_socket);
+        if (strcmp(cont, "Host:"))
+            perror("Incorrect query 3");
+        free(cont);
 
-        message = get_from_client(client_socket);
-        if (strcmp(message, "mymath.info"))
-            perror("Host(2)");
-        free(message);
+        cont = get_word(client_socket);
+        if (strcmp(cont, "mymath.info"))
+            perror("Incorrect query 4");
+        free(cont);
 
         printf("%s\n", word);
-        size_of_word = strlen(word);
-        write(client_socket, word, size_of_word);
-        telnet(word);
+        telnet(word, client_socket);
     }
-    free(message);
+    free(cont);
     close(client_socket);
     return OK;
 }

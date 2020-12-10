@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <sys/wait.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -18,16 +18,20 @@ enum errors {
 
 char *get_word(int *size) {
     char *word = NULL;
-    char ch = getchar();
-    int i = 0;
-    while (ch != '\n' && ch != ' ') {
-        i++;
-        word = realloc(word, (i + 1) * sizeof(char));
-        word[i - 1] = ch;
-        ch = getchar();
+    char c = getchar();
+    int cnt = 0;
+    while (c != '\n' && c != ' ') {
+        cnt++;
+        word = realloc(word, (cnt + 1) * sizeof(char));
+        word[cnt - 1] = c;
+        c = getchar();
     }
-    word[i] = '\0';
-    *size = i + 1;
+    if (word) {
+        word[cnt] = '\0';
+        *size = cnt + 1;
+    } else {
+        return get_word(size);
+    }
     return word;
 }
 
@@ -45,7 +49,8 @@ int init_socket(const char *ip, int port) {
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(port);
     memcpy(&server_address.sin_addr,
-        host -> h_addr_list[0], sizeof(server_address));
+        host -> h_addr_list[0],
+        sizeof(server_address));
 
     // connection
     struct sockaddr_in sin;
@@ -70,10 +75,18 @@ int main(int argc, char **argv) {
     char *ip = argv[1];
     int port = atoi(argv[2]);
     int server = init_socket(ip, port);
+    int pid = fork();
+    if (pid == 0) {
+        char ch;
+        while (read(server, &ch, 1) > 0) {
+            putchar(ch);
+        }
+        exit(0);
+    }
     char *word = NULL;
     int size_w;
     for (word = get_word(&size_w);
-        strcmp(word, "exit");
+        strcmp(word, "exit") && strcmp(word, "quit");
         word = get_word(&size_w)) {
             write(server, "GET\0", 4);
             write(server, word, size_w);
@@ -82,8 +95,9 @@ int main(int argc, char **argv) {
             write(server, "mymath.info\0", 12);
             free(word);
     }
-    write(server, "exit\0", 5);
+    write(server, "quit\0", 5);
     free(word);
     close(server);
+    wait(NULL);
     return OK;
 }
